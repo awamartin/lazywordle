@@ -6,6 +6,9 @@ const { getEventListeners } = require('prompt');
 
 dictionary((err, dict) => {
     const spell = nspell(dict);
+
+    console.log(dict);
+
     guessWord(spell);
 });
 
@@ -26,7 +29,7 @@ async function guessWord(spell) {
     guess[0] = generateRandomWord(spell, letterSet);
     console.log(guess[0]);
 
-    for (let rounds = 0; rounds < 5; rounds++) {
+    for (let round = 1; round < 5; round++) {
         prompt.start();
         var result = await prompt.get({
             properties: {
@@ -51,8 +54,8 @@ async function guessWord(spell) {
 
         letterSet = letterSet.filter((letter) => !result.incorrect.includes(letter));
 
-        guess[rounds + 1] = generatePartial(spell, letterSet, knownCorrect, knownIncorrect);
-        console.log(guess[rounds + 1]);
+        guess[round] = generatePartial(spell, letterSet, knownCorrect, knownIncorrect);
+        console.log(guess[round]);
     }
 }
 
@@ -85,42 +88,70 @@ function generateRandomWord(spell, include, length = 5) {
  * @return {string} The generated word
  */
 function generatePartial(spell, include, knownCorrect, knownIncorrect, length = 5) {
-    let word = '';
-    let usesKnownLetters = false;
-    while (!usesKnownLetters || !spell.correct(word)) {
-        word = '';
-        for (let wordIndex = 0; wordIndex < length; wordIndex++) {
-            knownLetters = knownCorrect.split('');
-            if (knownLetters[wordIndex] && knownLetters[wordIndex].match(/[a-z]/)) {
-                word = word + knownLetters[wordIndex];
-            } else {
-                let letterSet = [...include];
-                // filter letters we know are incorrect at this position
-                knownIncorrect.forEach((incorrectPattern) => {
-                    if (incorrectPattern.split('')[wordIndex]) {
-                        letterSet = letterSet.filter((letter) => !incorrectPattern.split('')[wordIndex].includes(letter));
-                    }
+    let word = [];
+    // iterate through potential words, keep going until we find one which is an actual word
+    while (!spell.correct(word.toString())) {
+        let valid = false;
+        while (!valid) {
+            word = knownCorrect.split('');
+            // count correct letters
+            let correctCount = 0;
+            word.forEach((letter) => {
+                if (letter.match(/[a-z]/)) correctCount++;
+            });
+
+            // create list of letters to use in this word
+            let candidateLetters = [];
+            // add known (but incorrect position) letters
+            knownIncorrect.forEach((incorrectPattern) => {
+                incorrectPattern.split('').forEach((letter) => {
+                    if (letter.match(/[a-z]/)) candidateLetters.push(letter);
                 });
+            });
+            // remove duplicates
+            candidateLetters = candidateLetters.filter(function (elem, pos) {
+                return candidateLetters.indexOf(elem) == pos;
+            });
 
-                // add a random letter from the remaining letter set
-                word = word + letterSet[Math.floor(Math.random() * letterSet.length)];
+            // add letters to the word to make up the word length
+            for (let letterIndex = candidateLetters.length - 1; letterIndex < (length - (correctCount + 1)); letterIndex++) {
+                // get random letter
+                candidateLetters.push(letterSet[Math.floor(Math.random() * letterSet.length)]);
             }
-        }
 
-        // check if the word contains the known letters
-        // create array of known (but incorrect) letters
-        knownIncorrectLetters = [];
-        knownIncorrect.forEach((combination) => {
-            combination.split('').forEach((letter) => knownIncorrectLetters.push(letter));
-        });
-        // remove duplicates
-        knownIncorrectLetters = knownIncorrectLetters.filter(function (elem, pos) {
-            return knownIncorrectLetters.indexOf(elem) == pos;
-        });
-        usesKnownLetters = true;
-        knownIncorrectLetters.forEach((letter) => usesKnownLetters = usesKnownLetters && (word.includes(letter)));
+            // check that there are no letters in invalid positions
+
+            // shuffle the letters
+            shuffle(candidateLetters);
+            // console.log(candidateLetters);
+            // create the word
+            for (let letterIndex = 0; letterIndex < length; letterIndex++) {
+                if (!word[letterIndex] || !word[letterIndex].match(/[a-z]/)) word[letterIndex] = candidateLetters.pop();
+            }
+            // check that letters are in valid places
+            valid = true;
+            for (let letterIndex = 0; letterIndex < length; letterIndex++) {
+                knownIncorrect.forEach((incorrectPattern) => {
+                    valid = valid && !(incorrectPattern[letterIndex] == word[letterIndex]);
+                    // console.log(`test`, incorrectPattern[letterIndex], word[letterIndex]);
+                });
+            }
+          //   console.log(`shuffled word`, word, valid);
+        }
+         console.log(`candidate word`, word);
     }
 
-    return word;
+    return word.toString();
 }
 
+
+/**
+ * Shuffle an array
+ * @param {array} array Array to be shuffled
+ */
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
