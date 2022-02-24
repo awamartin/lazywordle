@@ -22,7 +22,15 @@ async function guessWord() {
     let knownIncorrect = [];
     // guess a random first word
     shuffle(dictionary);
-    console.log(dictionary.pop());
+
+    //find a word with no double letters
+    //there could still be some optimisation here to eliminate letters like e or other vowels
+    let guess1 = dictionary[0].split('');
+    while(new Set(guess1).size !== guess1.length){
+        shuffle(dictionary);
+        guess1 = dictionary[0].split('');
+    }
+    console.log('guess: ',dictionary[0]);
 
     for (let round = 1; round < 5; round++) {
         prompt.start();
@@ -45,8 +53,8 @@ async function guessWord() {
         console.log(result);
 
         knownIncorrect.push(result.knownIncorrect);
-
-        console.log('dict', dictionary);
+        
+        //console.log('dict', dictionary);
 
         dictionary.forEach((word) => {
             // known letters
@@ -58,7 +66,7 @@ async function guessWord() {
                 }
             });
         });
-        console.log('known', dictionary);
+        //console.log('known', dictionary);
 
         dictionary.forEach((word) => {
             // known incorrect letters that are in the wrong place
@@ -70,7 +78,7 @@ async function guessWord() {
                 }
             });
         });
-        console.log('known incorrect', dictionary);
+        //console.log('known incorrect', dictionary);
 
         dictionary.forEach((word) => {
             // known incorrect letters that must exist
@@ -82,7 +90,7 @@ async function guessWord() {
                 }
             });
         });
-        console.log('known exist', dictionary);
+        //console.log('known exist', dictionary);
 
         dictionary.forEach((word) => {
             // incorrect letters
@@ -92,10 +100,10 @@ async function guessWord() {
                 });
             });
         });
-        console.log('incorrect', dictionary);
+        //console.log('incorrect', dictionary);
 
         shuffle(dictionary);
-        console.log('guess: ', dictionary.pop());
+        console.log('possible guesses: ', dictionary);
     }
 }
 
