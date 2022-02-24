@@ -3,7 +3,7 @@ const { getEventListeners } = require('prompt');
 const fs = require('fs');
 
 // load word list
-var dictionary = fs.readFileSync('./node_modules/dictionary-en/index.dic').toString().split("\n");
+var dictionary = fs.readFileSync('./english_words_full.txt').toString().split("\n");
 // filter to wordle specification
 dictionary = dictionary.filter((word) => {
     return (word.length == 5 &&
