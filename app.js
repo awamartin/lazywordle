@@ -51,9 +51,11 @@ async function guessWord() {
         dictionary.forEach((word) => {
             // known letters
             result.knownCorrect.split('').forEach((letter, letterIndex) => {
-                dictionary = dictionary.filter((word) => {
-                    return word.split('')[letterIndex] == letter;
-                });
+                if (letter.match(/[a-z]/)) {
+                    dictionary = dictionary.filter((word) => {
+                        return word.split('')[letterIndex] == letter;
+                    });
+                }
             });
         });
         console.log('known', dictionary);
@@ -61,9 +63,11 @@ async function guessWord() {
         dictionary.forEach((word) => {
             // known incorrect letters that are in the wrong place
             result.knownIncorrect.split('').forEach((letter, letterIndex) => {
-                dictionary = dictionary.filter((word) => {
-                    return !(word.split('')[letterIndex] == letter);
-                });
+                if (letter.match(/[a-z]/)) {
+                    dictionary = dictionary.filter((word) => {
+                        return !(word.split('')[letterIndex] == letter);
+                    });
+                }
             });
         });
         console.log('known incorrect', dictionary);
