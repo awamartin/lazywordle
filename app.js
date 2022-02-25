@@ -3,7 +3,7 @@ const { getEventListeners } = require('prompt');
 const fs = require('fs');
 
 // load word list
-var dictionary = fs.readFileSync('./english_words_full.txt').toString().split("\n");
+var dictionary = fs.readFileSync('./english_words_full.txt').toString().split("\r\n");
 // filter to wordle specification
 dictionary = dictionary.filter((word) => {
     return (word.length == 5 &&
@@ -21,16 +21,15 @@ guessWord();
 async function guessWord() {
     let knownIncorrect = [];
     // guess a random first word
-    shuffle(dictionary);
-
     //find a word with no double letters
     //there could still be some optimisation here to eliminate letters like e or other vowels
-    let guess1 = dictionary[0].split('');
-    while(new Set(guess1).size !== guess1.length){
-        shuffle(dictionary);
-        guess1 = dictionary[0].split('');
+    let guess1 = dictionary[Math.floor(Math.random()*dictionary.length)];
+	
+    while(new Set(guess1.split('')).size !== guess1.length){
+        guess1 = dictionary[Math.floor(Math.random()*dictionary.length)];
+		//console.log(guess1);
     }
-    console.log('guess: ',dictionary[0]);
+    console.log('guess: ',guess1);
 
     for (let round = 1; round < 5; round++) {
         prompt.start();
